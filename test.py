@@ -3,7 +3,7 @@
 # basic code source: https://pynput.readthedocs.io/en/latest/keyboard.html?highlight=keyboard#monitoring-the-keyboard
 from threading import Thread
 from time import sleep
-from sys import exit as syexit
+from sys import exit as sys_exit
 
 import pyautogui
 from pyautogui import click
@@ -38,9 +38,9 @@ def on_press(key):
 
 def on_release(key):
     """Get release keys and control the quit of listener."""
-    if key == keyboard.Key.esc:
+    if key == keyboard.Key.f1:
         # Stop listener
-        syexit(0)
+        sys_exit(0)
 
 
 def start_listener():
@@ -57,13 +57,14 @@ def start_listener():
 
     if debug:
         print("———————————— Keyboard listener stop! ————————————")  # debugger
+        sys_exit(0)
 
 
 def clicker():
     """Check the key and control the clicker."""
     global press, clicker_start
-    do_press = keyboard.Key.alt_l  # start clicker key
-    stop_press = keyboard.Key.alt_l  # stop clicker key
+    do_press = keyboard.Key.ctrl_l  # start clicker key
+    stop_press = keyboard.Key.ctrl_l  # stop clicker key
 
     if debug:
         print("———————————— Clicker thread start! ————————————")  # debugger
@@ -85,7 +86,7 @@ def clicker():
         elif press == keyboard.Key.esc:
             if debug:
                 print("\n———————————— Clicker thread stop! ————————————")  # debugger
-            exit(0)
+            sys_exit(0)
 
 
 def relax():
@@ -95,18 +96,20 @@ def relax():
 
     while not (clicker_start and listener_start):
         for letter in ['w', 'a', 'i', 't', 'i', 'n', 'g', '.', '.', '.']:
-            print(letter, end='')
+            print(letter, end='', flush=True)
             sleep(0.25)
         sleep(1)
-        print('\b' * 10, end='')
+        print('\r', end='', flush=True)
         sleep(1)
 
     if not debug:
-        print("\b\b\b\b\b\b\b\b\b\bNow you can use it.")
-        print("Type [LEFT_ALT] to start and [ESC] to stop.")
+        print("\rNow you can use it.")
+        print("Type [LEFT_CTRL] to start and [F1] to stop.")
+        sys_exit(0)
     else:
         print("———————————— Relax thread stop! ————————————")  # debugger
         print("============ All the modules are ready! ============")  # debugger
+        sys_exit(0)
 
 
 def main():
@@ -129,6 +132,6 @@ def main():
 
 
 if __name__ == '__main__':
-    exit(main())
+    sys_exit(main())
 else:
     print("You have imported a wrong extant pack!")
