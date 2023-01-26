@@ -1,9 +1,12 @@
 # coding:gbk
 # script builder: f233xdd
 # basic code source: https://pynput.readthedocs.io/en/latest/keyboard.html?highlight=keyboard#monitoring-the-keyboard
+# third-party dependent libraries: pyautogui, pynput
+# run on Python 3.11.1
 from threading import Thread
 from time import sleep
 from sys import exit as sys_exit
+from os import _exit as os_exit
 
 import pyautogui
 from pyautogui import click
@@ -38,18 +41,19 @@ def on_press(key):
 
 def on_release(key):
     """Get release keys and control the quit of listener."""
-    if key == keyboard.Key.f1:
+    if key == keyboard.Key.alt_gr:
         # Stop listener
-        sys_exit(0)
+        os_exit(0)
 
 
 def start_listener():
     """Start keyboard listener thread."""
     global listener_start
+
     listener = keyboard.Listener(
         on_press=on_press, on_release=on_release)
-
     listener.start()
+
     if debug:
         print("——————————— Keyboard listener start! ————————————")  # debugger
     listener_start = True
@@ -63,14 +67,14 @@ def start_listener():
 def clicker():
     """Check the key and control the clicker."""
     global press, clicker_start
-    do_press = keyboard.Key.ctrl_l  # start clicker key
-    stop_press = keyboard.Key.ctrl_l  # stop clicker key
+    do_press = keyboard.Key.alt_l  # start clicker key
+    stop_press = keyboard.Key.alt_l  # stop clicker key
 
     if debug:
         print("———————————— Clicker thread start! ————————————")  # debugger
     clicker_start = True
 
-    while True:
+    while not (press == keyboard.Key.alt_gr):
 
         if press == do_press:
             press = None
@@ -83,16 +87,17 @@ def clicker():
                     press = None  # avoid press is still the same as do_press
                     run_or_not = False
 
-        elif press == keyboard.Key.esc:
-            if debug:
-                print("\n———————————— Clicker thread stop! ————————————")  # debugger
+    else:
+        print("See you next time!")
+        if debug:
+            print("\n———————————— Clicker thread stop! ————————————")  # debugger
             sys_exit(0)
 
 
-def relax():
-    """Print something on the terminal to relax oneself."""
+def print_str():
+    """Print something on the terminal to print_str oneself."""
     if debug:
-        print("———————————— Relax thread start! ————————————")  # debugger
+        print("———————————— Print thread start! ————————————")  # debugger
 
     while not (clicker_start and listener_start):
         for letter in ['w', 'a', 'i', 't', 'i', 'n', 'g', '.', '.', '.']:
@@ -104,10 +109,10 @@ def relax():
 
     if not debug:
         print("\rNow you can use it.")
-        print("Type [LEFT_CTRL] to start and [F1] to stop.")
+        print("Type [LEFT_ALT] to start and [RIGHT_ALT] to stop.")
         sys_exit(0)
     else:
-        print("———————————— Relax thread stop! ————————————")  # debugger
+        print("———————————— Print thread stop! ————————————")  # debugger
         print("============ All the modules are ready! ============")  # debugger
         sys_exit(0)
 
@@ -118,8 +123,9 @@ def main():
         print("———————————— Main thread start! ————————————")  # debugger
 
     thread1 = Thread(target=clicker)
+    thread1.daemon = True
     thread2 = Thread(target=start_listener)
-    thread3 = Thread(target=relax)
+    thread3 = Thread(target=print_str)
     thread_list = [thread1, thread2, thread3]
     for thread in thread_list:
         thread.start()
