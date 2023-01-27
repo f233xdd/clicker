@@ -1,7 +1,7 @@
 # coding:gbk
 # script builder: f233xdd
 # basic code source: https://pynput.readthedocs.io/en/latest/keyboard.html?highlight=keyboard#monitoring-the-keyboard
-# third-party dependent libraries: pyautogui, pynput
+# third-party dependent libraries: pyautogui, pynput, PySide6
 # run on Python 3.11.1
 from threading import Thread
 from time import sleep
@@ -9,7 +9,8 @@ from sys import exit as sys_exit
 from os import _exit as os_exit
 
 import pyautogui
-from PySide6.QtWidgets import QApplication, QLabel
+from PySide6.QtWidgets import (QApplication, QLabel, QDialog,
+                               QPushButton, QLineEdit, QVBoxLayout)
 from pyautogui import click
 from pynput import keyboard
 
@@ -18,14 +19,13 @@ debug: bool = False  # this will show you when functions are start and over if i
 keyboard_debug: bool = True  # this will show you the keys which Pynput gets if it's True
 
 # optional functions
-pyautogui.PAUSE = 0.1  # time(second) between every single click
+pyautogui.PAUSE = 0.001  # time(second) between every single click
 is_GUI: bool = True
 
 # unchangeable variables
 press = None  # not exactly
 clicker_start: bool = False
 listener_start: bool = False
-massage: str = ""
 
 
 def on_press(key):
@@ -48,7 +48,8 @@ def on_release(key):
 
     sleep(0.001)  # lower use of CPU
     if key == keyboard.Key.alt_gr and (not is_GUI):
-        press = keyboard.Key.alt_gr  # Stop listener
+        # Stop listener
+        press = keyboard.Key.alt_gr
         sys_exit(0)
 
 
@@ -102,43 +103,58 @@ def clicker():
 
 def print_str():
     """Print something on the terminal to print_str oneself."""
-    global massage
 
     if debug:
         print("\r———————————— Print thread start! ————————————")  # debugger
 
-#    while not (clicker_start and listener_start):
-#        for letter in ['w', 'a', 'i', 't', 'i', 'n', 'g', '.', '.', '.']:
-#            print(letter, end='', flush=True)
-#            sleep(0.25)
-#        sleep(1)
-#        print('\r', end='', flush=True)
-#        sleep(1)
-
     while not (clicker_start and listener_start):
         for letter in ['w', 'a', 'i', 't', 'i', 'n', 'g', '.', '.', '.']:
-            massage = massage.join(letter)
+            print(letter, end='', flush=True)
             sleep(0.25)
         sleep(1)
-        massage = ''
+        print('\r', end='', flush=True)
         sleep(1)
 
     if not debug:
-        massage = "\rNow you can use it."
-        massage = massage.join("\nType [LEFT_ALT] to start and [RIGHT_ALT] to stop.")
+        print("\rNow you can use it.")
+        print("\nType [LEFT_ALT] to start and [RIGHT_ALT] to stop.")
     else:
         print("\r———————————— Print thread stop! ————————————")  # debugger
         print("\r============ All the modules are ready! ============")  # debugger
     sys_exit(0)
 
 
-class MainWindow:
+class MainWindow(QDialog):
+
+    def __init__(self):
+        super().__init__()
+        # create the parts
+        self.label = QLabel("You've run this script successfully.\nType LEFT_ALT to start and to stop.")
+        self.pause = QLineEdit("Enter pause time (seconds).")
+        self.button = QPushButton("Change it!")
+        # create the box, add the parts into the box
+        layout = QVBoxLayout()
+        layout.addWidget(self.label)
+        layout.addWidget(self.pause)
+        layout.addWidget(self.button)
+        # use the box
+        self.setLayout(layout)
+        # connect the button with the function
+        self.button.clicked.connect(self.set_pause)
+
+    def set_pause(self):
+        """Set the pause time."""
+        try:
+            pyautogui.PAUSE = float(self.pause.text())
+        except ValueError:
+            print('\b')
 
     @staticmethod
     def create_window():
+        """Create the main window"""
         window = QApplication([])
-        _massage = QLabel("You've run a script.\nEnter LEFT_ALT to start and stop.")
-        _massage.show()
+        main_window = MainWindow()
+        main_window.show()
         window.exec()
         os_exit(0)
 
@@ -148,12 +164,12 @@ def main():
     if debug:
         print("\r———————————— Main thread start! ————————————")  # debugger
 
-    thread1 = Thread(target=MainWindow.create_window)  # TODO
-    thread2 = Thread(target=print_str)
-    thread3 = Thread(target=start_listener)
-    thread4 = Thread(target=clicker)
-    thread4.daemon = True
-    thread_list = [thread1, thread2, thread3, thread4]
+    thread_window = Thread(target=MainWindow.create_window)
+    thread1 = Thread(target=print_str)
+    thread2 = Thread(target=start_listener)
+    thread3 = Thread(target=clicker)
+    thread3.daemon = True
+    thread_list = [thread_window, thread1, thread2, thread3]
     for thread in thread_list:
         thread.start()
     for thread in thread_list:
