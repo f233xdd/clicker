@@ -33,6 +33,7 @@ class Clicker(keyboard.Listener):
             self.press = p_key
             if show_press_key:
                 print(f"Press: {self.press}", flush=True)
+                
     def start(self):
         """Start keyboard listener thread."""
         super().start()
