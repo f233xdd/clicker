@@ -11,8 +11,8 @@ from PySide6.QtWidgets import (QApplication, QLabel, QDialog,
 
 import debugger
 
-debug: bool = True
-show_press_key: bool = True
+debug: bool = False
+show_press_key: bool = False
 
 pyautogui.PAUSE = 0.1
 is_GUI: bool = True
@@ -89,27 +89,25 @@ class Window(QDialog):
         except ValueError:
             print('\a')  # FIXME: say something to warn user!
 
+    @debugger.start_and_exit_sign(debug=debug)
     def show(self):
         """Create the main window"""
         if is_GUI:
-            window = QApplication([])
             super().show()
-            window.exec()
         else:
             print("WARNING: is_GUL is False.")
 
 
 def main():
     a_clicker = Clicker('f', 'f')
+    app = QApplication([])
     window = Window()
-    thread_window = threading.Thread(target=window.show)
+    window.show()
     thread1 = threading.Thread(target=a_clicker.start, daemon=True)
-
-    thread_window.start()
     thread1.start()
 
     if is_GUI:
-        thread_window.join()
+        app.exec()
     else:
         thread1.join()
 
