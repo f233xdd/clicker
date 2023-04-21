@@ -9,13 +9,8 @@ from pynput import keyboard
 from PySide6.QtWidgets import (QApplication, QLabel, QDialog,
                                QPushButton, QLineEdit, QVBoxLayout)
 
-import debugger
-
-debug: bool = False
 show_press_key: bool = False
-
 pyautogui.PAUSE = 0.1
-is_GUI: bool = True
 
 
 class Clicker(keyboard.Listener):
@@ -38,14 +33,11 @@ class Clicker(keyboard.Listener):
             self.press = p_key
             if show_press_key:
                 print(f"Press: {self.press}", flush=True)
-
-    @debugger.start_and_exit_sign(debug=debug)
     def start(self):
         """Start keyboard listener thread."""
         super().start()
         self.clicker()
-
-    @debugger.start_and_exit_sign(debug=debug)
+        
     def clicker(self):
         """Check the key and control the clicker."""
         while True:
@@ -89,15 +81,7 @@ class Window(QDialog):
         except ValueError:
             print('\a')  # FIXME: say something to warn user!
 
-    @debugger.start_and_exit_sign(debug=debug)
-    def show(self):
-        """Create the main window"""
-        if is_GUI:
-            super().show()
-        else:
-            print("WARNING: is_GUL is False.")
-
-
+            
 def main():
     a_clicker = Clicker('f', 'f')
     app = QApplication([])
@@ -105,12 +89,8 @@ def main():
     window.show()
     thread1 = threading.Thread(target=a_clicker.start, daemon=True)
     thread1.start()
-
-    if is_GUI:
-        app.exec()
-    else:
-        thread1.join()
-
+    app.exec()
+    
     return 0
 
 
