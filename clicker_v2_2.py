@@ -1,7 +1,5 @@
-# coding:gbk
 # script builder: f233xdd
-# basic code source: https://pynput.readthedocs.io/en/latest/keyboard.html?highlight=keyboard#monitoring-the-keyboard
-# third-party dependent libraries: pyautogui, pynput, PySide6
+# third-party dependent libraries: pyautogui, pynput
 # run on Python 3.11.1
 import threading
 import time
@@ -66,7 +64,7 @@ class Clicker(keyboard.Listener):
                         run_or_not = False
 
 
-class MainWindow(QDialog):
+class Window(QDialog):
 
     def __init__(self):
         super().__init__()
@@ -91,13 +89,11 @@ class MainWindow(QDialog):
         except ValueError:
             print('\a')  # FIXME: say something to warn user!
 
-    @staticmethod
-    def create_window():
+    def show(self):
         """Create the main window"""
         if is_GUI:
             window = QApplication([])
-            main_window = MainWindow()
-            main_window.show()
+            super().show()
             window.exec()
         else:
             print("WARNING: is_GUL is False.")
@@ -105,7 +101,8 @@ class MainWindow(QDialog):
 
 def main():
     a_clicker = Clicker('f', 'f')
-    thread_window = threading.Thread(target=MainWindow.create_window)
+    window = Window()
+    thread_window = threading.Thread(target=window.show)
     thread1 = threading.Thread(target=a_clicker.start, daemon=True)
 
     thread_window.start()
